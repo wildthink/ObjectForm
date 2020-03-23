@@ -11,9 +11,18 @@ import UIKit
 
 /// Bind model for the form
 public protocol Bindable {
-    associatedtype BindModel: NSObject
-    var bindModel: BindModel { set get }
+    associatedtype Model: BindModel
+    var bindModel: Model { set get }
 }
+
+public protocol BindModel {
+    func setValue(_ value: Any?, forKeyPath: String)
+}
+
+
+extension NSObject: BindModel {
+}
+
 
 /// Conform to feed UITableView with editable rows
 public protocol FormDataSource: Bindable {

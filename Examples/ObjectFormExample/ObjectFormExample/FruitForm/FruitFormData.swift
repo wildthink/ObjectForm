@@ -10,6 +10,8 @@ import ObjectForm
 import UIKit
 
 class FruitFormData: NSObject, FormDataSource {
+    var bindModel: BindModel
+    
     typealias BindModel = Fruit
 
     var basicRows: [BaseRow] = []
@@ -31,8 +33,6 @@ class FruitFormData: NSObject, FormDataSource {
         default: fatalError()
         }
     }
-
-    var bindModel: Fruit
 
     init(_ fruit: Fruit) {
         self.bindModel = fruit
