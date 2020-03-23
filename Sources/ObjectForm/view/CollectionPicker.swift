@@ -9,12 +9,13 @@
 import Foundation
 import UIKit
 
-public typealias PickerCompletionBlock = (_ selectedIndex: Int) -> Void
+public typealias PickerCompletionHandler = (_ selectedIndex: Int) -> Void
 
 protocol CollectionPicker {
-    init(collection: [Any], completionCallback:@escaping PickerCompletionBlock)
+    init(collection: [Any], completionHandler: @escaping PickerCompletionHandler)
 }
 
+// A selection picker implemented with UITableView
 public class TableCollectionPicker: UIViewController, CollectionPicker {
 
     public var selectedRow: Int? {
@@ -28,22 +29,30 @@ public class TableCollectionPicker: UIViewController, CollectionPicker {
     }
 
     private var tableView: UITableView = {
-        let view = UITableView(frame: .zero)
+        let view: UITableView
+        if #available(iOS 13, *) {
+            view = UITableView(frame: .zero, style: .insetGrouped)
+        }
+        else
+        {
+            view = UITableView(frame: .zero)
+        }
         return view
     }()
 
-    private var completionCallback: PickerCompletionBlock?
+    private var completionHandler: PickerCompletionHandler?
     private var collection: [Any]
 
-    public required init(collection: [Any], completionCallback: @escaping PickerCompletionBlock) {
-        self.completionCallback = completionCallback
+    public required init(collection: [Any], completionHandler: @escaping PickerCompletionHandler) {
+        self.completionHandler = completionHandler
         self.collection = collection
         super.init(nibName: nil, bundle: nil)
-        title = "设置"
 
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: Constants.CellIdentifier)
+
+        tableView.allowsMultipleSelection = false
 
         view.addSubview(tableView)
         tableView.pinEdges(to: view)
@@ -67,15 +76,20 @@ extension TableCollectionPicker: UITableViewDataSource, UITableViewDelegate {
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.CellIdentifier)!
         cell.textLabel?.text = String(describing: collection[indexPath.row])
+
         if let selectedRow = selectedRow,
             selectedRow == indexPath.row {
             cell.accessoryType = .checkmark
+        } else {
+            cell.accessoryType = .none
         }
+
         return cell
     }
 
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        completionCallback?(indexPath.row)
+        selectedRow = indexPath.row
+        completionHandler?(indexPath.row)
         navigationController?.popViewController(animated: true)
     }
 }

@@ -10,6 +10,8 @@ import ObjectForm
 import UIKit
 
 class FruitFormData: NSObject, FormDataSource {
+    var bindModel: BindModel
+    
     typealias BindModel = Fruit
 
     var basicRows: [BaseRow] = []
@@ -32,44 +34,46 @@ class FruitFormData: NSObject, FormDataSource {
         }
     }
 
-    var bindModel: Fruit
-
     init(_ fruit: Fruit) {
         self.bindModel = fruit
 
         basicRows.append(StringRow(title: "Name",
                                    icon: "",
-                                   updateTag: "name",
+                                   kvcKey: "name",
                                    value: fruit.name ?? "",
                                    placeholder: nil,
-                                   validation: {
+                                   validator: {
                                     return !(fruit.name?.isEmpty ?? true)
 
         }))
 
         basicRows.append(DoubleRow(title: "Price",
                                    icon: "",
-                                   updateTag: "price",
+                                   kvcKey: "price",
                                    value: fruit.price,
-                                   placeholder: "",
-                                   validation: nil))
+                                   placeholder: ""))
 
         basicRows.append(DoubleRow(title: "Weight",
                                    icon: "",
-                                   updateTag: "weight",
+                                   kvcKey: "weight",
                                    value: fruit.weight,
-                                   placeholder: "",
-                                   validation: nil))
+                                   placeholder: ""))
 
         basicRows.append(TextViewRow(title: "Note",
-                                     updateTag: "note",
+                                     kvcKey: "note",
                                      value: fruit.note ?? "-"))
+
+        basicRows.append(DateRow(title: "Purchase Date",
+                                 icon: "",
+                                 kvcKey: "date",
+                                 value: fruit.date ?? Date(),
+                                 placeholder: ""))
 
         basicRows.append(SelectRow(title: "Retailer",
                                    icon: "",
-                                   updateTag: "retailer",
+                                   kvcKey: "retailer",
                                    value: fruit.retailer,
-                                     listOfValues: ["Walmart", "McDonald", "Carrefour"]))
+                                   listOfValues: ["Walmart", "McDonald", "Carrefour"]))
     }
 
     override init() { fatalError("not implemented") }

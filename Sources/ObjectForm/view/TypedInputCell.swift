@@ -9,13 +9,26 @@
 import Foundation
 import UIKit
 
-public class TypedInputCell<T>: FormInputCell {
+public class TypedInputCell<T>: FormInputCell, UITextFieldDelegate {
+
+    private var dateFormatter: DateFormatter = {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .short
+        dateFormatter.timeStyle = .short
+        return dateFormatter
+    }()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
 
-        textField.addTarget(self, action: #selector(textFieldValueChange(_ :)), for: .editingChanged)
-        updateKeyboardType()
+        let toolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        toolbar.sizeToFit()
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneBtnTapped))
+        let flexibleButton = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        toolbar.setItems([flexibleButton, doneButton], animated: false)
+
+        textField.inputAccessoryView = toolbar
+        textField.delegate = self
     }
 
     required init(coder aDecoder: NSCoder) {
@@ -28,18 +41,34 @@ public class TypedInputCell<T>: FormInputCell {
         case is String.Type:
             return text
         case is Double.Type:
-            return Double(text) ?? 0 as NSNumber
+            return Double(text) ?? Double(0)
+        case is Date.Type:
+            return dateFormatter.date(from: text)
         default:
             return nil
         }
     }
 
-    func updateKeyboardType() {
+    func updateKeyboardType(row: BaseRow) {
         switch T.self {
         case is String.Type:
             textField.keyboardType = .default
+            textField.addTarget(self, action: #selector(textFieldValueChange(_ :)), for: .editingChanged)
+
         case is Double.Type:
             textField.keyboardType = .decimalPad
+            textField.addTarget(self, action: #selector(textFieldValueChange(_ :)), for: .editingChanged)
+
+        case is Date.Type:
+
+            let datePicker = UIDatePicker()
+            datePicker.addTarget(self, action: #selector(datePickerValueChanged(_:)), for: .valueChanged)
+            textField.inputView = datePicker
+
+            if let date = row.baseValue as? Date {
+                datePicker.date = date
+            }
+
         default:
             textField.keyboardType = .default
         }
@@ -51,16 +80,38 @@ public class TypedInputCell<T>: FormInputCell {
         if let number = row.baseValue as? Double, number < Double.ulpOfOne {
             // clear the text so that user can start input from integer value
             textField.text = ""
+        } else if let date = row.baseValue as? Date {
+            textField.text = dateFormatter.string(from: date)
         } else {
             textField.text = row.description
         }
+
+        updateKeyboardType(row: row)
+
         textField.placeholder = row.placeholder
 
         if row.validationFailed == true {
-            titleLabel.textColor = .systemRed
+            if #available(iOS 13, *) {
+                titleLabel.textColor = .systemRed
+            } else {
+                titleLabel.textColor = .red
+            }
         } else {
-            titleLabel.textColor = .label
+            if #available(iOS 13, *) {
+                titleLabel.textColor = .label
+            } else {
+                titleLabel.textColor = .black
+            }
         }
+    }
+
+    @objc private func doneBtnTapped() {
+        _ = resignFirstResponder()
+    }
+
+    @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
+        textField.text = dateFormatter.string(from: sender.date)
+        self.delegate?.cellDidChangeValue(self, value: outputValue)
     }
 
     @objc private func textFieldValueChange(_ sender: UITextField) {
@@ -76,4 +127,14 @@ public class TypedInputCell<T>: FormInputCell {
         super.resignFirstResponder()
         return textField.resignFirstResponder()
     }
+
+    public func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        guard let inputView = textField.inputView else {
+            return true
+        }
+        let isDatePicker = inputView.isKind(of: UIDatePicker.self)
+
+        return !isDatePicker
+    }
+
 }

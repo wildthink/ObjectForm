@@ -9,11 +9,20 @@
 import Foundation
 import UIKit
 
-/// bind/get model for the form
+/// Bind model for the form
 public protocol Bindable {
-    associatedtype BindModel: NSObject
-    var bindModel: BindModel { set get }
+    associatedtype Model: BindModel
+    var bindModel: Model { set get }
 }
+
+public protocol BindModel {
+    func setValue(_ value: Any?, forKeyPath: String)
+}
+
+
+extension NSObject: BindModel {
+}
+
 
 /// Conform to feed UITableView with editable rows
 public protocol FormDataSource: Bindable {
@@ -28,10 +37,9 @@ public protocol FormDataSource: Bindable {
 
 extension FormDataSource {
 
-    /// TODO: refactor updateItem and save as protocol method with default implementations
     public func updateItem(at indexPath: IndexPath, value: Any?) -> Bool {
         let currentRow = row(at: indexPath)
-        guard let keyPath = currentRow.updateTag else {
+        guard let keyPath = currentRow.kvcKey else {
             assertionFailure("Row keyPath should not be empty")
             return false
         }
@@ -57,7 +65,7 @@ extension FormDataSource {
             for rowIndex in 0..<numberOfRows(at: section) {
                 let currentRow = row(at: IndexPath(row: rowIndex, section: section))
 
-                if let validation = currentRow.validation, validation() == false {
+                if let validator = currentRow.validator, validator() == false {
                     isValid = false
                     currentRow.validationFailed = true
                 }
@@ -67,4 +75,3 @@ extension FormDataSource {
         return isValid
     }
 }
-

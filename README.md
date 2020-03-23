@@ -1,13 +1,13 @@
-<p>
-<img src="https://github.com/haojianzong/ObjectForm/blob/master/banner.png?raw=true"/>
-</p>
+![](https://github.com/haojianzong/ObjectForm/blob/develop/banner.png?raw=true)
+
+[![ObjectForm](https://github.com/haojianzong/ObjectForm/workflows/ObjectForm/badge.svg)](https://github.com/haojianzong/ObjectForm/actions?query=workflow%3AObjectForm)
 
 ObjectForm
 =======
 
 A simple yet powerful library to build form for your class models.
 
-<img width="200" src="https://github.com/haojianzong/ObjectForm/blob/master/demo.gif?raw=true" />
+<img width="200" src="https://github.com/haojianzong/ObjectForm/blob/develop/demo.gif?raw=true" />
 
 ## Motivations
 
@@ -17,7 +17,15 @@ ObjectForm doesn't fight with you to write UIKit code. By design, it is simple t
 
 This project has no dependency of any other library.
 
+Application
+=======
+
+In my application ([a personal finance app](https://xxz.jakehao.com)), I use ObjectForm to make forms for multiple classes as well as different variants for the same class, which saves me from writing duplicate code.
+
+![](https://github.com/haojianzong/ObjectForm/blob/develop/application.jpg?raw=true")
+
 ## Features
+
 - Bind class model to form rows
 - Automatic keyboards types according to model types
 - Form rows are type safe
@@ -27,16 +35,13 @@ This project has no dependency of any other library.
 
 ## Requirements
 
-- iOS >= 13.0
+- iOS >= 11.0
 
 ## Usage
 
 1. Copy sources
-
-Copy files under [/Sources](https://github.com/haojianzong/ObjectForm/tree/master/Sources/ObjectForm) into your project.
-
+  - Copy files under [/Sources](https://github.com/haojianzong/ObjectForm/tree/develop/Sources/ObjectForm) into your project.
 2. Carthage (Coming soon)
-
 3. [Swift Package Manager](https://swift.org/package-manager/)
   - Click "Files -> Swift Package Manager -> Add Package Dependency..." in Xcode's menu
   - Search "https://github.com/haojianzong/ObjectForm".
@@ -62,7 +67,7 @@ Copy files under [/Sources](https://github.com/haojianzong/ObjectForm/tree/maste
 
 ### Tutorials
 
-You can follow [ObjectFormExample](https://github.com/haojianzong/ObjectForm/tree/master/Examples/ObjectFormExample) in `ObjectFormExample` to learn how to build a simple form with a class model. 
+You can follow [ObjectFormExample](https://github.com/haojianzong/ObjectForm/tree/develop/Examples/ObjectFormExample) in `ObjectFormExample` to learn how to build a simple form with a class model. 
 
 ### Binding Model to Form
 
@@ -80,22 +85,22 @@ class FruitFormData: NSObject, FormDataSource {
 
       basicRows.append(StringRow(title: "Name",
                                  icon: "",
-                                 updateTag: "name",
+                                 kvcKey: "name",
                                  value: fruit.name ?? "",
                                  placeholder: nil,
-                                 validation: nil))
+                                 validator: nil))
 
       // Row are type safe
       basicRows.append(DoubleRow(title: "Price",
                                  icon: "",
-                                 updateTag: "price",
+                                 kvcKey: "price",
                                  value: fruit.price,
                                  placeholder: "",
-                                 validation: nil))
+                                 validator: nil))
 
       // You can build as many rows as you want
       basicRows.append(TextViewRow(title: "Note",
-                                   updateTag: "note",
+                                   kvcKey: "note",
                                    value: fruit.note ?? "-"))
 
   }
@@ -144,15 +149,15 @@ extension FruitFormVC: FormCellDelegate {
 
 By providing a validation block when building a row, you can provide any validaiton rules.
 
-<img width="300" src="https://github.com/haojianzong/ObjectForm/blob/master/validation.gif?raw=true" />
+<img width="300" src="https://github.com/haojianzong/ObjectForm/blob/develop/validation.gif?raw=true" />
 
 ```swift
 basicRows.append(StringRow(title: "Name",
                            icon: "",
-                           updateTag: "name",
+                           kvcKey: "name",
                            value: fruit.name ?? "",
                            placeholder: nil,
-                           validation: {
+                           validator: {
                            // Custom rules for row validation
                             return !(fruit.name?.isEmpty ?? true)
 
@@ -215,13 +220,13 @@ class TextViewRow: BaseRow {
         return "<TextViewRow> \(title ?? "")"
     }
 
-    required init(title: String, updateTag: String, value: String?) {
+    required init(title: String, kvcKey: String, value: String?) {
         self.cell = TextViewInputCell()
 
         super.init()
 
         self.title = title
-        self.updateTag = updateTag
+        self.kvcKey = kvcKey
         self.value = value
         self.placeholder = nil
     }
